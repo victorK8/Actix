@@ -13,7 +13,12 @@ mod hub {
     pub mod hub;
 }
 
-/// Server Main
+mod lights {
+	pub mod lights;
+}
+
+///********************************** SERVER MAIN *****************************************
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
 
@@ -26,6 +31,9 @@ async fn main() -> std::io::Result<()> {
                     .service(hub::hub::execute_command)
                     .service(hub::hub::check_user)
                     .service(hub::hub::hub_status)
+            ).service(
+                web::scope("/Lights/")
+                    .service(lights::lights::light_by_id)
             )
     })
     .bind(("127.0.0.1", 8080))?
