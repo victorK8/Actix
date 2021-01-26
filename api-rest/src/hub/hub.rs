@@ -7,8 +7,6 @@
 use actix_web::{get, post, web, HttpResponse, Responder}; /// Actix Framework Pkgs.
 use serde::{Serialize, Deserialize}; /// Serde Pkg.
 use std::process::Command; /// Cmd Pkgs.
-use std::string::ToString; /// String pkgs.
-use chrono::{Datelike, Timelike, Utc}; /// Time lib.
 use std::println; /// Basic print with \n
 
 
@@ -44,31 +42,34 @@ pub struct Response {
 
 /// Check user
 fn authenticate(user:&str, pwd:&str) -> bool{
+
+    let result:bool;
+
     // Good user settings
     let gguser: &str = "vmalumbres";
     let ggpwd: &str = "VM4lumbr3s";
-    let mut result:bool = false;
 
     // Check
-    if ((gguser.eq(user) && (ggpwd.eq(pwd))) {
+    if gguser.eq(user) && ggpwd.eq(pwd) {
         result = true;
+    }else{
+        result = false;
     }
 
     // Return result
-    result;
+    result
 }
 
 ///********************************** HTTP METHODS *************************************
 
 /// Execute POST method
 #[post("/Execute")]
-async fn execute_command(request: web::Json<RequestCMD>) -> impl Responder {
+pub async fn execute_command(request: web::Json<RequestCMD>) -> impl Responder {
 
     println!("[LOG] Hub module: Command Line Executer");
 
 
-    let process = Command::new("sh")
-        .arg(&request.commands)
+    let process = Command::new(&request.commands)
         .status()
         .expect("Failed to execute command");
 
@@ -78,14 +79,12 @@ async fn execute_command(request: web::Json<RequestCMD>) -> impl Responder {
     } else {
         HttpResponse::Ok().json(Response { result: false })
     }
-}
 
-  authenticator.authenticate().is_ok()
 }
 
 /// Auth. POST method
 #[post("/Auth")]
-async fn check_user(request: web::Json<RequestUser>) -> impl Responder {
+pub async fn check_user(request: web::Json<RequestUser>) -> impl Responder {
 
     println!("[LOG] Hub module: User Auth.");
 
@@ -100,7 +99,7 @@ async fn check_user(request: web::Json<RequestUser>) -> impl Responder {
 
 /// Status of hub GET method
 #[get("/Status")]
-async fn hub_status() -> impl Responder {
+pub async fn hub_status() -> impl Responder {
 
 	// Status
 	let hub_status = Status{

@@ -23,9 +23,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(
                 web::scope("/Hub/")
-                    .service(hub::execute_command)
-                    .service(hub::check_user)
-                    .service(hub::hub_status)
+                    .service(hub::hub::execute_command)
+                    .service(hub::hub::check_user)
+                    .service(hub::hub::hub_status)
             )
     })
     .bind(("127.0.0.1", 8080))?
