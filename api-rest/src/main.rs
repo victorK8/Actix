@@ -1,58 +1,37 @@
-/// Api-Rest example 
-/// by Víctor Malumbres Talles
-/// Ubuntu 20.04 LTS Machine
+/// Example of api-rest service on Actix Framework
+/// 
+/// Server App
+///
+/// By Victor M. - CIRCE - Based on the next page
+///
+/// https://codeburst.io/how-to-build-a-rest-api-to-execute-system-commands-using-actix-rust-a-step-by-step-guide-e257d5442b16
 
-use actix_web::{get,post, web, App, HttpResponse, HttpServer, Responder};
 
-#[derive(Serialize,Deserialize)]
-struct Data {
-    brightness: u8,
-    time: u64,
+use actix_web::{App, HttpServer, web};
+
+extern crate simple_logger;
+
+/// How to add your own modules
+mod Executor {
+    pub mod auth;
+    pub mod execute;
 }
 
-
-/// Request Handlers
-
-#[derive(Serialize, Deserialize)]
-struct File {
-    name: String,
-    time: u64,
-    err: String
-}
-
-#[derive(Deserialize)]
-struct Download {
-    name: String,
-}
-
-#[post("/Upload/{name}")]
-async fn upload() -> impl Responder {
-    let u = &File {
-        name: "dummy data".to_string(),
-        time: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),err: "".to_string()
-    };
-    HttpResponse::Ok().json(u)
-}
-
-#[get("/Download")]
-async fn download(info: web::Path<Download>) -> HttpResponse {
-    let name = String::from(info.name.as_str());
-    let body = once(ok::<_, Error>(Bytes::from(name)));
-
-    HttpResponse::Ok()
-        .content_type("application/json")
-        .streaming(body)
-}
-
-/// Server Main
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    simple_logger:: init_with_level(log::Level::Info).unwrap();
+
     HttpServer::new(|| {
-	   App::new()
-	        .service(upload)
-	        .service(download)
+        App::new()
+            .service(
+                web::scope("/serv/")
+                    .service(executor::validate_password::validate_password)
+                    .service(executor::execute::execute_command)
+            )
     })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+        .workers(10)
+        .keep_alive(15)
+        .bind("127.0.0.1:8088")?
+        .run()
+        .await
 }
