@@ -17,6 +17,10 @@ mod lights {
 	pub mod lights;
 }
 
+mod webpage {
+    pub mod backend;
+}
+
 ///********************************** SERVER MAIN *****************************************
 
 #[actix_rt::main]
@@ -31,11 +35,15 @@ async fn main() -> std::io::Result<()> {
                     .service(hub::hub::execute_command)
                     .service(hub::hub::check_user)
                     .service(hub::hub::hub_status)
-            ).service(
-                web::scope("/Lights/")
-                    .service(lights::lights::light_by_id)
             )
+            .service(
+                web::scope("/Lights/")
+                    .service(lights::lights::lights_by_id)
+                    .service(lights::lights::all_lights)
+            )
+            .service(webpage::backend::index)
     })
+    .workers(2)
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
